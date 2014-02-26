@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>knockout-router</title>
+  <link rel="stylesheet" href="examples/css/example.css" />
+</head>
+<body>
+  <h1>knockout-router examples</h1>
+  <nav>
+    <a href="#/">Home</a>
+    <a href="#/about">About</a>
+    <a href="#/contact">Contact</a>
+  </nav>
+  
+  
+  <section data-bind="route: '' ">This is the home section.</section>
+  <section data-bind="route: { pattern: 'about' } ">This is the about section.</section>
+  <section data-bind="route: 'contact' ">This is the contact section.</section>
+
+  <section id="scripts">
+    <script src="examples/lib/knockout-3.0.0.js"></script>
+    <script src="src/knockout-router.js"></script>
+    <script src="examples/js/app.js"></script>
+  </section>
+</body>
+</html>
