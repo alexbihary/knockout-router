@@ -34,6 +34,8 @@ A simple take on routing for knockout applications.
 </div>
 ```
 
+
+
 ### Example CSS and JS
 
 ```
@@ -61,6 +63,33 @@ ko.router.init({
 });
 ```
 
+---
+
+## Router Binding
+```
+<!-- routes defined in viewmodel -->
+<div data-bind="router: { transition: 'entrance', cacheViews: true }"></div>
+```
+```
+/* define routes */
+
+ko.router.map([
+  { route: ['', 'home'], module: 'home', title: 'Welcome', nav: true }, // name: 'home,' view: 'home'
+  { route: 'who-we-are', module: 'about', title: 'About Us' },          // name: 'about', view: 'about'
+  { route: 'contact', nav: true },   // name: 'contact', module: 'contact', view: 'contact', title: 'Contact'
+  { route: 'blog(/:slug)', title: 'Crazy Blog' }   // name|module|view: 'blog'
+]);
+
+ko.router.map({
+  parentRoute: 'contact',
+  routes: [
+    { route: 'video-landing-page', redirect: '' }
+  ]
+});
+
+```
+
+
 
 ## ToDo
 
@@ -68,6 +97,7 @@ ko.router.init({
 * Route parameters
 * Load in external templates and/or modules
 * Transition animations
+* Add option to cache views
 
 ## License
 MIT https://github.com/alexbihary/knockout-router/blob/master/LICENSE
