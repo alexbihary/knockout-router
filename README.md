@@ -74,10 +74,19 @@ ko.router.init({
 /* define routes */
 
 ko.router.map([
-  { route: ['', 'home'], module: 'home', title: 'Welcome', nav: true }, // name: 'home,' view: 'home'
-  { route: 'who-we-are', module: 'about', title: 'About Us' },          // name: 'about', view: 'about'
-  { route: 'contact', nav: true },   // name: 'contact', module: 'contact', view: 'contact', title: 'Contact'
-  { route: 'blog(/:slug)', title: 'Crazy Blog' }   // name|module|view: 'blog'
+
+  // name: 'home,' template: 'home'
+  { route: ['', 'home'], module: 'home', title: 'Welcome', nav: true },
+  
+  // name: 'about', template: 'about'
+  { route: 'who-we-are', module: 'about', title: 'About Us', nav: true },
+  
+  // name: 'contact', template: 'contact', title: 'Contact'
+  { route: 'contact', module: 'contact', nav: true },
+  
+  // name: 'news', template: 'news', data: [':id']
+  { route: 'content/news/:id', module: 'news', title: 'The News' }
+  
 ]);
 
 ko.router.map({

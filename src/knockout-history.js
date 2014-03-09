@@ -183,7 +183,7 @@
   // Add a route to be tested when the fragment changes. Routes added later
   // may override previous routes.
   exports.route = function(route, callback) {
-    exports.f.unshift({route: route, callback: callback});
+    env.handlers.unshift({route: route, callback: callback});
   }
 
   // Checks the current URL to see if it has changed, and if it has,
@@ -240,13 +240,13 @@
     // If hash changes haven't been explicitly disabled, update the hash
     // fragment to store history.
     } else if (env.wantsHashChange) {
-      exports._updateHash(env.location, fragment, options.replace);
+      exports.updateHash(env.location, fragment, options.replace);
       if (env.iframe && (fragment !== exports.getFragment(exports.getHash(env.iframe)))) {
         // Opening and closing the iframe tricks IE7 and earlier to push a
         // history entry on hash-tag change.  When replace is true, we don't
         // want this.
         if(!options.replace) env.iframe.document.open().close();
-        exports._updateHash(env.iframe.location, fragment, options.replace);
+        exports.updateHash(env.iframe.location, fragment, options.replace);
       }
 
     // If you've told us that you explicitly don't want fallback hashchange-
@@ -269,7 +269,6 @@
     }
   }
 
-  ko.history = exports;
-  
+  ko.history = exports;  
 });
 

@@ -7,22 +7,25 @@ define(['knockout', 'knockout-router'], function(ko) {
     };
     
     function notify() {
-      //console.log(arguments, new Date());
+      console.log(arguments, new Date());
     }
     
-    function notFoundHandler(fragment) {
+    function notFoundHandler(fragment, query) {
       
     }
     
     // Configure routing options before defining routes
     ko.router.configure({ hashPrefix: '#/', debug: true, notify: notify });
     
+    // Configure module loader
+    ko.bindingHandlers.module.baseDir = 'js';
+    
     // Define the routes before ko.applyBindings() 
     ko.router.map([
-      { route: 'home', module: 'home', title: 'Welcome', nav: true }, // name: 'home,' view: 'home'
-      { route: 'who-we-are', module: 'about', title: 'About Us' },          // name: 'about', view: 'about'
-      { route: 'blog(/:slug)', title: 'Crazy Blog' },   // name|module|view: 'blog'
-      { route: '*default', callback: notFoundHandler }
+      { route: '', name: 'home', title: 'Welcome', nav: true },
+      { route: 'who-we-are', title: 'About Us', nav: true },
+      { route: 'blog(/:slug)', title: 'Crazy Blog' },
+      { route: '*notfound', callback: notFoundHandler }
     ]);
     
     // Bind the view model

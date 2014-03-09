@@ -12,6 +12,7 @@
 })(function(ko, exports, undefined) {
   
   var routes = ko.observableArray([]),
+      visitedRoutes = ko.observableArray([]),
       noop = function(){},
       settings = ko.observable({
         debug: false,
@@ -66,19 +67,23 @@
     configureRoute(this.config);
   }
   
-  Route.prototype.activate = function() {
+  Route.prototype.activate = function(args, fragment) {
     if (this.element) this.element.style.display = '';
     this.active = true;
+    this.args = args;
+    this.fragment = fragment;
+    return this;
   }
   Route.prototype.deactivate = function() {
     if (this.element) this.element.style.display = 'none';
     this.active = false;
+    return this;
   }
   
   
   function configureRoute(config) {
     config.title = config.title || convertRouteToTitle(config.route);
-    config.module = config.module || convertRouteToModuleId(config.route);
+    config.module = config.module; // || convertRouteToModuleId(config.route);
     config.hash = config.hash || convertRouteToHash(config.route);
     config.name = config.name || convertRouteToName(config.route);
     config.routePattern = routeToRegExp(config.route);
@@ -102,8 +107,6 @@
     var value = stripParametersFromRoute(route);
     return value.replace(/\//g, '-');
   }
-  
-  
   function stripParametersFromRoute(route) {
     var colonIndex = route.indexOf(':');
     var length = colonIndex > 0 ? colonIndex - 1 : route.length;
@@ -118,13 +121,29 @@
   // order of the routes here to support behavior where the most general
   // routes can be defined at the bottom of the route map.
   function bindRoutes() {
-    if (!routes) return;
-    //routes = _.result(this, 'routes');
-    var route, routeKeys = _.keys(this.routes);
-    while ((route = routeKeys.pop()) != null) {
-      route(route, this.routes[route]);
-    }
+    if (!routes().length) return;
+    routes().forEach(function(r, idx) {
+      ko.history.route(r.config.routePattern, function(fragment) {
+        var args = extractParameters(r.config.routePattern, fragment);
+        
+        r.activate(args, fragment);
+        
+        exports.vm.activeRoute(r);
+        if (r.config.callback) r.config.callback.apply(r, args);
+        if (settings().notify) settings().notify.apply(r, args);
+        
+        if (settings().debug) {
+          console.group('knockout-router: navigated');
+          console.debug('route: "%s"', r.config.route);
+          console.debug('fragment: "%s"', fragment);
+          console.debug('args: ', args);
+          console.debug('instance: %O', r);
+          console.groupEnd();
+        }
+      });
+    });
   }
+  
   
   // Convert a route string into a regular expression, suitable for matching
   // against the current location hash.
@@ -146,7 +165,7 @@
     return ko.utils.arrayMap(params, function(param, idx) {
       // Don't decode the search params.
       if (idx === params.length - 1) return param || null;
-      return param ? decodeURIComponent(param) :: null;
+      return param ? decodeURIComponent(param) : null;
     });
   }
   
@@ -159,6 +178,16 @@
   // Bind the routes and Start the Router/History.
   exports.init = function(options) {
     bindRoutes();
+    
+    if (settings().debug) {
+      console.group('knockout-router: started');
+      console.debug('settings: %O', settings());
+      console.debug('debug mode: enabled');
+      console.groupEnd();
+      window.ko = window.ko || ko;
+      window.vm = window.vm || exports.vm;
+    }
+    
     ko.history.start(options);
     return exports;
   }
@@ -193,8 +222,20 @@
         return route.config.nav;
       });
     }),
-    routes: routes
+    routes: routes,
+    activeRoute: ko.observable()
   };
+  
+  exports.vm.activeRoute.subscribe(function(route) {
+    if (route) {
+      ko.utils.arrayForEach(visitedRoutes(), function(vr) {
+        if (vr && vr !== route) {
+          visitedRoutes.remove(vr.deactivate());
+        }
+      });
+      visitedRoutes.push(route);
+    }
+  });
   
   // Define route mappings
   exports.map = function(routesConfig) {
@@ -216,23 +257,39 @@
   
   
   ko.bindingHandlers.router = {
-    init: function(element, valueAccessor, allBindingsAccessor, data, context) {
+    init: function(element, valueAccessor, allBindings, bindingContext) {
       return { controlsDescendantBindings: true };      
     },
-    update: function(element, valueAccessor, allBindingsAccessor, data, context) {
-      var settings = ko.utils.unwrapObservable(valueAccessor());
+    update: function(element, valueAccessor, allBindings, bindingContext) {
+      //var settings = ko.utils.unwrapObservable(valueAccessor());
+      var value = valueAccessor(),
+        route, options, moduleBinding;
       
+      ko.computed(function() {
+        options = ko.utils.unwrapObservable(value);
+        moduleBinding = {};
+        route = exports.vm.activeRoute();
+        
+        if (route && route.config.module) {
+          moduleBinding.name = route.config.module;
+          moduleBinding.template = route.config.template || route.config.module;
+          moduleBinding.data = route.args;
+          
+          ko.applyBindingsToNode(element, { module: moduleBinding });
+        }
+      });
     }
   };
-  k
+  ko.virtualElements.allowedBindings.router = true;
   
   
   ko.bindingHandlers.route = {
-    init: function(element, valueAccessor, allBindingsAccessor, data, context) {
+    init: function(element, valueAccessor, allBindings, bindingContext) {
       var settings = ko.utils.unwrapObservable(valueAccessor());
       routes.push(new Route(settings, element));
     }
   };
+  ko.virtualElements.allowedBindings.route = true;
   
   ko.router = exports;
 });
