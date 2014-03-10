@@ -69,17 +69,51 @@
   
   Route.prototype.activate = function(args, fragment) {
     if (this.element) this.element.style.display = '';
+    if (this.subscribers) {
+      ko.utils.arrayForEach(this.subscribers(), function(subscriber) {
+        subscriber.element.style.display = '';
+      });
+    }
     this.active = true;
     this.args = args;
+    this.data = putArgsIntoDataObject(args, this.config.route);
     this.fragment = fragment;
     return this;
   }
   Route.prototype.deactivate = function() {
     if (this.element) this.element.style.display = 'none';
+    if (this.subscribers) {
+      ko.utils.arrayForEach(this.subscribers(), function(subscriber) {
+        subscriber.element.style.display = 'none';
+      });
+    }
     this.active = false;
     return this;
   }
+  Route.prototype.subscribe = function(config, element) {
+    this.subscribers = this.subscribers || ko.observableArray([]);
+    this.subscribers.push({ config: config, element: element });
+  }
   
+  function putArgsIntoDataObject(argsArray, route) {
+    var data = {}, idx = 0, findParams = /:(\w+)/g, match, value;
+    while ((match = findParams.exec(route)) !== null) {
+      value = match[1];
+      if (/^[a-zA-Z_$][0-9a-zA-Z_$]*$/.test(value) && argsArray[idx]) {
+        data[value] = argsArray[idx];
+      }
+      idx++;
+    }
+    if (argsArray[idx] && /^([a-zA-Z_$][0-9a-zA-Z_$]*=[^&]*&?)+$/.test(argsArray[idx])) {
+      var pairs = argsArray[idx].split('&');
+      pairs.forEach(function(pair, i) {
+        var parts = pair.split('=');
+        if (parts[1]) data[parts[0]] = parts[1];
+      });
+    }
+    
+    return data;
+  }
   
   function configureRoute(config) {
     config.title = config.title || convertRouteToTitle(config.route);
@@ -114,7 +148,8 @@
   }
   function isTypeOf(theObject, type) {
     if (typeof(theObject) === 'undefined') return 'undefined' === type.toLowerCase();
-    return Object.prototype.toString.call(theObject).toLowerCase().indexOf(type.toLowerCase() + ']') > -1;
+    var regex = new RegExp('\\[object ' + type + '\\]', 'i');
+    return regex.test(Object.prototype.toString.call(theObject));
   }
   
   // Bind all defined routes to `knockout-history`. We have to reverse the
@@ -263,19 +298,23 @@
     update: function(element, valueAccessor, allBindings, bindingContext) {
       //var settings = ko.utils.unwrapObservable(valueAccessor());
       var value = valueAccessor(),
-        route, options, moduleBinding;
+        route, options, moduleBinding, templateBinding;
       
       ko.computed(function() {
         options = ko.utils.unwrapObservable(value);
-        moduleBinding = {};
+        moduleBinding = {}; templateBinding = {};
         route = exports.vm.activeRoute();
+        if (!route) return; // disable existing module/template bindings?
         
-        if (route && route.config.module) {
+        if (route.config.module) {
           moduleBinding.name = route.config.module;
           moduleBinding.template = route.config.template || route.config.module;
           moduleBinding.data = route.args;
           
           ko.applyBindingsToNode(element, { module: moduleBinding });
+        } else if (route.config.template) {
+          templateBinding.name = route.config.template;
+          templateBinding.data = route.data;
         }
       });
     }
@@ -285,8 +324,20 @@
   
   ko.bindingHandlers.route = {
     init: function(element, valueAccessor, allBindings, bindingContext) {
-      var settings = ko.utils.unwrapObservable(valueAccessor());
-      routes.push(new Route(settings, element));
+      var route, routeValue, settings = ko.utils.unwrapObservable(valueAccessor());
+      
+      if (isTypeOf(settings, 'string')) settings = { route: settings };
+      routeValue = settings.route || settings.name;
+
+      route = ko.utils.arrayFirst(routes(), function(r) {
+        return r.config.name === routeValue || r.config.route === routeValue || r.config.routePattern === routeToRegExp(routeValue);
+      });
+      
+      if (route) {
+        route.subscribe(settings, element);
+      } else {
+        routes.push(new Route(settings, element));
+      }
     }
   };
   ko.virtualElements.allowedBindings.route = true;
