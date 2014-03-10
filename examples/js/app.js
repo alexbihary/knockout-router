@@ -6,12 +6,14 @@ define(['knockout', 'knockout-router'], function(ko) {
       moduleToShow: ko.observable()      
     };
     
+    // Can attach a global subscription to be notified for all route changes.
     function notify() {
       console.log(arguments, new Date());
     }
     
+    // Can attach a 'route not found' handler, which will be passed a url fragment and query string.
     function notFoundHandler(fragment, query) {
-      
+      console.log(fragment, query);
     }
     
     // Configure routing options before defining routes
