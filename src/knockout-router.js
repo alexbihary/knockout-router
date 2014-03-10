@@ -1,3 +1,6 @@
+// knockout-router
+// ----------------
+// Ported from Backbone.Router (and some influence from Durandal's Router)
 ;(function(factory) {
     //CommonJS
     if (typeof require === 'function' && typeof exports === 'object' && typeof module === 'object') {
@@ -24,36 +27,9 @@
       splatParam = /\*\w+/g,
       escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g,
       trailingSlash = /\/$/,
-      onHashChangeSupported = 'onhashchange' in window;
-  
-  if (!onHashChangeSupported) console.error('knockout-router: onhashchange event is not supported.');
-  
-  function handleHashChange(e) {
-    change(e.newURL, e.oldURL);
-  }
-  
-  function change(newURL, oldURL) {
-    var hash = newURL.substr(newURL.indexOf(settings().hashPrefix) + settings().hashPrefix.length);
-    var activatedRoute;
-    ko.utils.arrayForEach(routes(), function(r) {
-      var pattern = r.config.pattern || r.config.route;
-      if (pattern === hash || pattern.substr(settings().hashPrefix.length) === hash) {
-        r.activate();
-        settings().notify.call(null, r);
-        activatedRoute = r;
-      } else {
-        r.deactivate();
-      }
-    });
-    
-    if (settings().debug) {
-      console.group('knockout-router: navigated');
-      console.debug('urls: %O', { newURL: newURL, oldURL: oldURL });
-      console.debug("hashUrl: '%s'", settings().hashPrefix + hash);
-      console.debug('route: %O', activatedRoute);
-      console.groupEnd();
-    }
-  }
+      findParams = /:(\w+)/g,
+      queryString = /^([a-zA-Z_$][0-9a-zA-Z_$]*=[^&]*&?)+$/,
+      jsVariable = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/;
   
   function Route(config, element) {
     if (typeof config === 'string') {
@@ -96,15 +72,15 @@
   }
   
   function putArgsIntoDataObject(argsArray, route) {
-    var data = {}, idx = 0, findParams = /:(\w+)/g, match, value;
+    var data = {}, idx = 0, match, value;
     while ((match = findParams.exec(route)) !== null) {
       value = match[1];
-      if (/^[a-zA-Z_$][0-9a-zA-Z_$]*$/.test(value) && argsArray[idx]) {
+      if (jsVariable.test(value) && argsArray[idx]) {
         data[value] = argsArray[idx];
       }
       idx++;
     }
-    if (argsArray[idx] && /^([a-zA-Z_$][0-9a-zA-Z_$]*=[^&]*&?)+$/.test(argsArray[idx])) {
+    if (argsArray[idx] && queryString.test(argsArray[idx])) {
       var pairs = argsArray[idx].split('&');
       pairs.forEach(function(pair, i) {
         var parts = pair.split('=');
@@ -226,28 +202,6 @@
     ko.history.start(options);
     return exports;
   }
-      
-  exports.init_old = function() {
-    //listen for future hashchange events
-    window.addEventListener('hashchange', handleHashChange, false);
-    
-    if (settings().debug) {
-      console.group('knockout-router: start listening');
-      console.debug('settings: %O', settings());
-      console.debug('debug mode: enabled');
-      console.groupEnd();
-      window.ko = window.ko || ko;
-      window.vm = window.vm || exports.vm;
-    }
-    
-    if (window.location.hash === '') { //if no hash set, set to initial value
-      window.location.hash = settings().hashPrefix = settings().hashPrefix || '#';
-    } else { //otherwise, trigger the logic to parse and execute the current route
-      var newURL = window.location.href;
-      var oldURL = newURL.substr(0, newURL.indexOf('#'));
-      change(newURL, oldURL);
-    }
-  }
   
   // Exposes a view model to assist in binding routes to the UI.
   exports.vm = {
@@ -319,8 +273,6 @@
       });
     }
   };
-  ko.virtualElements.allowedBindings.router = true;
-  
   
   ko.bindingHandlers.route = {
     init: function(element, valueAccessor, allBindings, bindingContext) {
@@ -340,7 +292,11 @@
       }
     }
   };
-  ko.virtualElements.allowedBindings.route = true;
+  
+  if (ko.virtualElements) {
+    ko.virtualElements.allowedBindings.router = true;
+    ko.virtualElements.allowedBindings.route = true;
+  }
   
   ko.router = exports;
 });
