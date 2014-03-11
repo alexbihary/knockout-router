@@ -39,6 +39,7 @@
     }
     this.config = config;
     this.element = element;
+    this.isActive = ko.observable(false);
     
     configureRoute(this.config);
   }
@@ -50,7 +51,7 @@
         subscriber.element.style.display = '';
       });
     }
-    this.active = true;
+    this.isActive(true);
     this.args = args;
     this.data = putArgsIntoDataObject(args, this.config.route);
     this.fragment = fragment;
@@ -63,7 +64,7 @@
         subscriber.element.style.display = 'none';
       });
     }
-    this.active = false;
+    this.isActive(false);
     return this;
   }
   Route.prototype.subscribe = function(config, element) {
@@ -212,7 +213,8 @@
       });
     }),
     routes: routes,
-    activeRoute: ko.observable()
+    activeRoute: ko.observable(),
+    isNavigating: ko.observable(false)
   };
   
   exports.vm.activeRoute.subscribe(function(route) {
