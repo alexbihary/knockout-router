@@ -59,6 +59,10 @@
   };
   
   
+  exports.getEnv = function() {
+    return ko.utils.extend({}, env);
+  }
+  
   // Are we at the app root?
   exports.atRoot = function() {
     return env.location.pathname.replace(/[^\/]$/, '$&/') === env.root;
@@ -182,8 +186,8 @@
 
   // Add a route to be tested when the fragment changes. Routes added later
   // may override previous routes.
-  exports.route = function(route, callback) {
-    env.handlers.unshift({route: route, callback: callback});
+  exports.route = function(route, callback, name, appendToEnd) {
+    env.handlers[appendToEnd ? 'push' : 'unshift']({route: route, callback: callback, name: name});
   }
 
   // Checks the current URL to see if it has changed, and if it has,

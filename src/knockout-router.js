@@ -19,9 +19,12 @@
       noop = function(){},
       settings = ko.observable({
         debug: false,
+        handleRelativeAnchors: true,
         hashPrefix: '#',
-        notify: noop
+        notify: noop,
+        root: '/'
       }),
+      routeNotFound = { route: '*notfound', name: 'notfound', callback: noop, nav: false },
       optionalParam = /\((.*?)\)/g,
       namedParam = /(\(\?)?:\w+/g,
       splatParam = /\*\w+/g,
@@ -29,7 +32,9 @@
       trailingSlash = /\/$/,
       findParams = /:(\w+)/g,
       queryString = /^([a-zA-Z_$][0-9a-zA-Z_$]*=[^&]*&?)+$/,
-      jsVariable = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/;
+      jsVariable = /^[a-zA-Z_$][0-9a-zA-Z_$]*$/,
+      // Cached regex for stripping leading and trailing slashes.
+      rootStripper = /^\/+|\/+$/g;
   
   function Route(config, element) {
     if (typeof config === 'string') {
@@ -96,6 +101,7 @@
     config.title = config.title || convertRouteToTitle(config.route);
     config.module = config.module; // || convertRouteToModuleId(config.route);
     config.hash = config.hash || convertRouteToHash(config.route);
+    config.href = config.href || convertRouteToHref(config.route);
     config.name = config.name || convertRouteToName(config.route);
     config.routePattern = routeToRegExp(config.route);
     config.callback = isTypeOf(config.callback, 'function') && config. callback || noop;
@@ -114,6 +120,9 @@
     }
     return settings().hashPrefix + route;
   }
+  function convertRouteToHref(route) {
+    return settings().root + route;
+  }
   function convertRouteToName(route) {
     var value = stripParametersFromRoute(route);
     return value.replace(/\//g, '-');
@@ -129,12 +138,11 @@
     return regex.test(Object.prototype.toString.call(theObject));
   }
   
-  // Bind all defined routes to `knockout-history`. We have to reverse the
-  // order of the routes here to support behavior where the most general
-  // routes can be defined at the bottom of the route map.
+  // Bind all defined routes to `knockout-history`. Pass 'true' for parameter 'appendToEnd' to
+  // ensure that the more general route handlers are checked last.
   function bindRoutes() {
-    if (!routes().length) return;
-    routes().forEach(function(r, idx) {
+    routes.push(new Route(routeNotFound));
+    ko.utils.arrayForEach(routes(), function(r) {
       ko.history.route(r.config.routePattern, function(fragment) {
         var args = extractParameters(r.config.routePattern, fragment);
         
@@ -146,13 +154,13 @@
         
         if (settings().debug) {
           console.group('knockout-router: navigated');
-          console.debug('route: "%s"', r.config.route);
+          console.debug('route: "%s" (%s)', r.config.route, r.config.name);
           console.debug('fragment: "%s"', fragment);
           console.debug('args: ', args);
           console.debug('instance: %O', r);
           console.groupEnd();
         }
-      });
+      }, r.config.name, true);
     });
   }
   
@@ -181,6 +189,35 @@
     });
   }
   
+  // Add a cross-platform `addEventListener` shim for older browsers.
+  var addEventListener = window.addEventListener || function (eventName, listener) {
+    return attachEvent('on' + eventName, listener);
+  };
+  
+  function handleRelativeAnchors() {
+    // All navigation that is relative should be passed through the navigate
+    // method, to be processed by the router.  If the link has a data-bypass
+    // attribute, bypass the delegation completely.
+    addEventListener.call(document, 'click', function(e) {
+      var target = e.target || e.srcElement;
+      if (target && target.nodeName === 'A' && !target.getAttribute('data-bypass')) {
+        // Get the anchor href and protcol
+        var href = target.getAttribute('href');
+        var protocol = target.protocol + '//';
+        
+        // Ensure the protocol is not part of URL, meaning its relative.
+        if (href && href.slice(0, protocol.length) !== protocol && href.indexOf('javascript:') !== 0) {
+          // Stop the default event to ensure the link will not cause a page refresh.
+          e.preventDefault();
+          
+          // Call 'navigate' to allow knockout-router/history to handle the route.
+          exports.navigate(href, true);
+        }
+        
+      }
+    }, false);
+  }
+  
   // Configure the router settings.
   exports.configure = function(customSettings) {
     ko.utils.extend(settings(), customSettings || {});
@@ -200,7 +237,8 @@
       window.vm = window.vm || exports.vm;
     }
     
-    ko.history.start(options);
+    ko.history.start(ko.utils.extend(settings(), options || {}));
+    if (settings().handleRelativeAnchors) handleRelativeAnchors();
     return exports;
   }
   
@@ -235,6 +273,11 @@
         routes.push(new Route(config));
       });
     }
+    return exports;
+  }
+  
+  exports.mapNotFound = function(config) {
+    ko.utils.extend(routeNotFound, config || {});
     return exports;
   }
   

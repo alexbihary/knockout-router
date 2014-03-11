@@ -8,13 +8,13 @@
 <body>
   <h1>knockout-router examples</h1>
   <nav>
-    <a href="#/">Home</a>
-    <a href="#/about">About</a>
-    <a href="#/contact">Contact</a>
-    <a href="#/content/news/1">News Article 1</a>
-    <a href="#/content/news/2">News Article 2</a>
-    <a href="#/content/news/3">News Article 3</a>
-    <a href="#parent/34ab/value/12?a=nice">special</a>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/contact">Contact</a>
+    <a href="/content/news/1">News Article 1</a>
+    <a href="/content/news/2">News Article 2</a>
+    <a href="/content/news/3">News Article 3</a>
+    <a href="/parent/34ab/value/12?a=nice">special</a>
   </nav>
   
   <hr>
@@ -28,7 +28,7 @@
   
   <hr>
   <nav data-bind="foreach: router.navRoutes">
-    <a data-bind="text: config.name, attr: { href: config.hash }"></a>
+    <a data-bind="text: config.name, attr: { href: config.href }"></a>
   </nav>
   <hr>
   <section data-bind="router"></section> 

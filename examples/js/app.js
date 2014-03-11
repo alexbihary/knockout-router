@@ -17,7 +17,7 @@ define(['knockout', 'knockout-router'], function(ko) {
     }
     
     // Configure routing options before defining routes
-    ko.router.configure({ hashPrefix: '#/', debug: true, notify: notify });
+    ko.router.configure({ hashPrefix: '#/', debug: true, notify: notify, pushState: true });
     
     // Configure module loader
     ko.bindingHandlers.module.baseDir = 'js';
@@ -26,10 +26,10 @@ define(['knockout', 'knockout-router'], function(ko) {
     ko.router.map([
       { route: '', name: 'home', template: 'home', title: 'Welcome', nav: true },
       { route: 'who-we-are', name: 'about', title: 'About Us', nav: true },
-      { route: 'contact-us', name: 'contact', title: 'Contact Us', nav: true },
+      { route: 'contact-us', name: 'contact', title: 'Contact Us', nav: true }
       //{ route: 'blog(/:slug)', name: 'blog', title: 'Crazy Blog' },
-      { route: '*notfound', name: 'notfound', callback: notFoundHandler }
-    ]);
+      //{ route: '*notfound', name: 'notfound', callback: notFoundHandler }
+    ]).mapNotFound({ callback: notFoundHandler }); // can specify a module/template/callback/title
     
     // Bind the view model
     ko.applyBindings(vm);
