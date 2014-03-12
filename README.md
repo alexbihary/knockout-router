@@ -1,14 +1,14 @@
 knockout-router
 ===============
 
-A simple take on routing for knockout applications.
+a router for knockout (a port of Backbone.Router with influences from Durandal)
 
 
 ### How to Use
 
-1. Include knockout.js
-2. Include knockout-amd-helpers.js (optionally) to take advantage of external module/template loading.
-3. Include knockout-history.js and knockout-router.js (supports commonjs, amd, or global)
+1. Include `knockout.js`
+2. Include `knockout-amd-helpers.js` (optionally - https://github.com/rniemeyer/knockout-amd-helpers) to take advantage of external module/template loading.
+3. Include `knockout-history.js` and `knockout-router.js` (supports commonjs, amd, or global)
 4. Add `route` and/or `router` bindings to HTML markup
 5. Call `ko.router.map(routeConfig)` and pass in an array of routes.
 6. Call `ko.applyBindings(vm)` // add `router` property to your view model and set it to `ko.router.vm`
@@ -83,6 +83,7 @@ ko.router.init();
 ## ToDo
 
 * Add observable property to notify when nagivating. (for progress bars/spinners)
+* Use the `visible` binding for toggling `route` bounded elements
 * Transition animations
 * Add option to cache views
 * Add ability to define child routes/routers
