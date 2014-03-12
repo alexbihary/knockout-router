@@ -26,7 +26,8 @@ define(['knockout', 'knockout-router'], function(ko) {
     ko.router.map([
       { route: '', name: 'home', template: 'home', title: 'Welcome', nav: true },
       { route: 'who-we-are', name: 'about', title: 'About Us', nav: true },
-      { route: 'contact-us', name: 'contact', title: 'Contact Us', nav: true }
+      { route: 'contact-us', name: 'contact', title: 'Contact Us', nav: true },
+      { route: 'content/news/:articleId', module: 'news' }
       //{ route: 'blog(/:slug)', name: 'blog', title: 'Crazy Blog' },
       //{ route: '*notfound', name: 'notfound', callback: notFoundHandler }
     ]).mapNotFound({ callback: notFoundHandler }); // can specify a module/template/callback/title

@@ -36,6 +36,10 @@
       // Cached regex for stripping leading and trailing slashes.
       rootStripper = /^\/+|\/+$/g;
   
+  // Shim console.debug
+  if (!console.debug) console.debug = console.log;
+  if (!console.group) console.group = console.groupEnd = console.log;
+  
   function Route(config, element) {
     if (typeof config === 'string') {
       config = {
@@ -190,15 +194,43 @@
   }
   
   // Add a cross-platform `addEventListener` shim for older browsers.
-  var addEventListener = window.addEventListener || function (eventName, listener) {
-    return attachEvent('on' + eventName, listener);
-  };
+  var addEvent = (function () {
+    var filter = function(el, type, fn) {
+      for ( var i = 0, len = el.length; i < len; i++ ) {
+        addEvent(el[i], type, fn);
+      }
+    };
+    if (document.addEventListener) {
+      return function (el, type, fn) {
+        if ( el && el.nodeName || el === window ) {
+          el.addEventListener(type, fn, false);
+        } else if (el && el.length) {
+          filter(el, type, fn);
+        }
+      };
+    }
+ 
+    return function (el, type, fn) {
+      if ( el && el.nodeName || el === window ) {
+        el.attachEvent('on' + type, function () { return fn.call(el, window.event); });
+      } else if ( el && el.length ) {
+        filter(el, type, fn);
+      }
+    };
+  })();
+ 
+  // usage
+  //addEvent( document.getElementsByTagName('a'), 'click', fn);
+  
+  //var addEventListener = window.addEventListener || function (eventName, listener) {
+  //  return attachEvent('on' + eventName, listener);
+  //};
   
   function handleRelativeAnchors() {
     // All navigation that is relative should be passed through the navigate
     // method, to be processed by the router.  If the link has a data-bypass
     // attribute, bypass the delegation completely.
-    addEventListener.call(document, 'click', function(e) {
+    addEvent(document, 'click', function(e) {
       var target = e.target || e.srcElement;
       if (target && target.nodeName === 'A' && !target.getAttribute('data-bypass')) {
         // Get the anchor href and protcol
@@ -212,8 +244,7 @@
           
           // Call 'navigate' to allow knockout-router/history to handle the route.
           exports.navigate(href, true);
-        }
-        
+        }        
       }
     }, false);
   }

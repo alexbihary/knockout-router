@@ -7,10 +7,11 @@
 </head>
 <body>
   <h1>knockout-router examples</h1>
+  <nav data-bind="foreach: router.navRoutes">
+    <a data-bind="text: config.title, attr: { href: config.href }"></a>
+  </nav>
+  
   <nav>
-    <a href="/">Home</a>
-    <a href="/about">About</a>
-    <a href="/contact">Contact</a>
     <a href="/content/news/1">News Article 1</a>
     <a href="/content/news/2">News Article 2</a>
     <a href="/content/news/3">News Article 3</a>
@@ -22,28 +23,10 @@
   <section style="display:none;" data-bind="route: { route: '', name: 'home' } ">This is the home section.</section>
   <section style="display:none;" data-bind="route: { route: 'about' } ">This is the about section.</section>
   <section style="display:none;" data-bind="route: 'contact' ">This is the contact section.</section>
-  <section style="display:none;" data-bind="route: { route: 'content/news/:articleId', module: 'news' }"></section>
-  <section style="display:none;" data-bind="route: { route: 'articles/:id', module: 'news' }"></section>
   <section style="display:none;" data-bind="route: { route: 'parent/:pid/value/:vid' }">Special route.</section>  
   
-  <hr>
-  <nav data-bind="foreach: router.navRoutes">
-    <a data-bind="text: config.name, attr: { href: config.href }"></a>
-  </nav>
-  <hr>
   <section data-bind="router"></section> 
-  
-  
-  <!--
-  <hr>
-  <h3>Choose a module to load/show:</h3>
-  <input type="radio" name="moduleToShow" value="m-one" data-bind="checked: moduleToShow" /><span>m-one</span>
-  <br>
-  <input type="radio" name="moduleToShow" value="m-two" data-bind="checked: moduleToShow" /><span>m-two</span>
-  
-  <section data-bind="module: { name: moduleToShow, template: 'message' }"></section>
-  -->
-  
+    
   <section id="scripts">
     <script src="examples/lib/require-2.1.10.min.js" data-main="examples/js/main"></script>
   </section>
