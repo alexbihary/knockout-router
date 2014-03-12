@@ -1,7 +1,7 @@
 {
   "name": "knockout-router",
-  "description": "a simple take on routing for knockout applications",
-  "version": "0.1.0",
+  "description": "a router for knockout",
+  "version": "0.2.0",
   "keywords": [
     "knockout",
     "ko",
