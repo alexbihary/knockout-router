@@ -6,107 +6,86 @@ A simple take on routing for knockout applications.
 
 ### How to Use
 
-1. Include knockout.js library
-2. Include knockout-router.js library (supports commonjs, amd, or global)
-3. Add `route` bindings to HTML markup
-4. Call ko.router.init() after ko.applyBindings()
+1. Include knockout.js
+2. Include knockout-amd-helpers.js (optionally) to take advantage of external module/template loading.
+3. Include knockout-history.js and knockout-router.js (supports commonjs, amd, or global)
+4. Add `route` and/or `router` bindings to HTML markup
+5. Call `ko.router.map(routeConfig)` and pass in an array of routes.
+6. Call `ko.applyBindings(vm)` // add `router` property to your view model and set it to `ko.router.vm`
+7. Call `ko.router.init()`    // starts history tracking
 
 
-### Example bindings
+### Simple example - route binding
+Simply define routes using the `route` binding and the elements will be displayed/hidden when the route is active/inactive.
 
 ```
 <!-- Nav links assume that hashPrefix is set to '#/', see custom settings below. -->
 <nav>
-  <a href="#/">Root route</a>
-  <a href="#/article">Show Article</a>
-  <a href="#/another-article">2nd article</a>
+  <a href="/">Root route</a>
+  <a href="/article">Show Article</a>
 </nav>
 
-<div class="view" data-bind="route: '' ">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sit in!</div>
-<div class="view" data-bind="route: 'article' ">
+<div style="display:none;" data-bind="route: '' ">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sit in!</div>
+<div style="display:none;" data-bind="route: 'article' ">
   Lorem ipsum dolor sit amet, consectetur adipisicing elit. Suscipit nostrum id hic consectetur. 
   Cumque ab fuga ex enim tenetur porro qui totam dignissimos dicta explicabo.
 </div>
-<div class="view" data-bind="route: { pattern: '#/another-article' }">
-  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quam quas quod excepturi. Ipsam in nemo pariatur 
-  dolore optio suscipit itaque architecto repellat iusto esse rem voluptatum quia numquam tempore magnam 
-  perspiciatis nam impedit officia! Et.
-</div>
-```
 
+/* Optionally configure router settings */
+ko.router.configure({
+  debug: true,
+  hashPrefix: '#/',
+  notify: function(fragment, query) { console.log(fragment, query); },
+  pushState: true
+});
 
-
-### Example CSS and JS
-
-```
-/* 
-    CSS: good idea to intitially hide all blocks controlled by the router.
-    The router will set display:block when the route is active.
-*/
-.view { display: none; }
-```
-
-```
-/* 
-    JS: 
-*/
-var viewModel = {}; //the view model
+var viewModel = {};
+viewModel.router = ko.router.vm;
 ko.applyBindings(vm);
 
-//default settings
+/* Start the router */
 ko.router.init();
-
-//custom settings
-ko.router.init({
-  hashPrefix: '#!/',
-  debug: true
-});
 ```
 
 ---
 
-## Router Binding
+### Router Binding
 ```
+<!-- show list of routes (where `nav === true`) -->
+<nav>
+  <ul data-bind="foreach: router.navRoutes">
+    <li data-bind="css: { active: isActive }"><a data-bind="text: config.title, attr: { href: config.href }"></a></li>
+  </ul>
+</nav>
+
 <!-- routes defined in viewmodel -->
-<div data-bind="router: { transition: 'entrance', cacheViews: true }"></div>
-```
-```
+<div data-bind="router: {}"></div>
+
+/* configure router */
+ko.router.configure(options);
+
 /* define routes */
-
 ko.router.map([
-
-  // name: 'home,' template: 'home'
-  { route: ['', 'home'], module: 'home', title: 'Welcome', nav: true },
-  
-  // name: 'about', template: 'about'
+  { route: '', module: 'home', title: 'Welcome', nav: true },
   { route: 'who-we-are', module: 'about', title: 'About Us', nav: true },
-  
-  // name: 'contact', template: 'contact', title: 'Contact'
   { route: 'contact', module: 'contact', nav: true },
-  
-  // name: 'news', template: 'news', data: [':id']
   { route: 'content/news/:id', module: 'news', title: 'The News' }
-  
 ]);
 
-ko.router.map({
-  parentRoute: 'contact',
-  routes: [
-    { route: 'video-landing-page', redirect: '' }
-  ]
-});
+var vm = { router: ko.router.vm };
+ko.applyBindings(vm);
 
+ko.router.init();
 ```
 
 
 
 ## ToDo
 
-* Allow routes to be defined on the ko.router instead of in the binding
-* Route parameters
-* Load in external templates and/or modules
+* Add observable property to notify when nagivating. (for progress bars/spinners)
 * Transition animations
 * Add option to cache views
+* Add ability to define child routes/routers
 
 ## License
 MIT https://github.com/alexbihary/knockout-router/blob/master/LICENSE
