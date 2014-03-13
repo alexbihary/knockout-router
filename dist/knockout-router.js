@@ -629,6 +629,8 @@
         } else if (route.config.template) {
           templateBinding.name = route.config.template;
           templateBinding.data = route.data;
+          
+          ko.applyBindingsToNode(element, { template: templateBinding });
         }
       });
     }
