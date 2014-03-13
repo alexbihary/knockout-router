@@ -83,11 +83,7 @@ module.exports = function(grunt) {
       },
       js: {
         files: 'js/**/*.js',
-        tasks: ['clean:js', 'dist-js']
-      },
-      less: {
-        files: 'less/**/*.less',
-        tasks: ['clean:css', 'dist-css']
+        tasks: ['clean', 'dist']
       },
       html: {
         files: 'index.html'
@@ -100,7 +96,6 @@ module.exports = function(grunt) {
   //grunt.registerTask('dev-open', ['connect', 'open', 'watch']);
   //grunt.registerTask('dev', ['connect', 'watch']);
   //grunt.registerTask('test', []);
-  grunt.registerTask('dist-js', ['concat', 'uglify']);
-  grunt.registerTask('dist', ['clean', 'dist-js']);
+  grunt.registerTask('dist', ['clean', 'concat', 'uglify']);
   grunt.registerTask('default', 'dist');
 };
