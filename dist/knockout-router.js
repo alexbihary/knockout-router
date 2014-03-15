@@ -309,6 +309,9 @@
         root: '/'
       }),
       routeNotFound = { route: '*notfound', name: 'notfound', callback: noop, nav: false },
+      startsWithRoot = ko.computed(function() {
+        return new RegExp('^' + settings().root.replace(/\//g, '\\/'));
+      }),
       optionalParam = /\((.*?)\)/g,
       namedParam = /(\(\?)?:\w+/g,
       splatParam = /\*\w+/g,
@@ -526,6 +529,9 @@
           // Stop the default event to ensure the link will not cause a page refresh.
           e.preventDefault();
           
+          // Remove/replace leading root path if present
+          href = startsWithRoot().test(href) ? href.replace(startsWithRoot(), '/') : href;
+          
           // Call 'navigate' to allow knockout-router/history to handle the route.
           exports.navigate(href, true);
         }        
@@ -535,12 +541,13 @@
   
   // Configure the router settings.
   exports.configure = function(customSettings) {
-    ko.utils.extend(settings(), customSettings || {});
+    settings(ko.utils.extend(settings(), customSettings || {}));
     return exports;
   }
   
   // Bind the routes and Start the Router/History.
   exports.init = function(options) {
+    settings(ko.utils.extend(settings(), options || {}));
     bindRoutes();
     
     if (settings().debug) {
@@ -552,7 +559,7 @@
       window.vm = window.vm || exports.vm;
     }
     
-    ko.history.start(ko.utils.extend(settings(), options || {}));
+    ko.history.start(settings());
     if (settings().handleRelativeAnchors) handleRelativeAnchors();
     return exports;
   }
