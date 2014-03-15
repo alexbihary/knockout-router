@@ -1,10 +1,9 @@
 require.config({
-  baseUrl: '/knockout-router/examples',
+  baseUrl: 'examples',
   paths: {
     'knockout': 'lib/knockout-3.0.0',
     'knockout-amd-helpers': 'lib/knockout-amd-helpers-0.6.1',
-    'knockout-history': '../src/knockout-history',
-    'knockout-router': '../src/knockout-router',
+    'knockout-router': '../dist/knockout-router',
     
     'text': 'lib/require-text-2.0.10'
   },
@@ -12,11 +11,8 @@ require.config({
     'knockout-amd-helpers': {
       deps: ['knockout']
     },
-    'knockout-history': {
-      deps: ['knockout']
-    },
     'knockout-router': {
-      deps: ['knockout', 'knockout-amd-helpers', 'knockout-history']
+      deps: ['knockout']
     }
   }
 });

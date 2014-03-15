@@ -17,7 +17,7 @@ define(['knockout', 'knockout-router'], function(ko) {
     }
     
     // Configure routing options before defining routes
-    ko.router.configure({ hashPrefix: '#/', debug: true, notify: notify, pushState: true, root: '/knockout-router/' });
+    ko.router.configure({ hashPrefix: '#/', debug: true, notify: notify, pushState: true });
     
     // Configure module loader
     ko.bindingHandlers.module.baseDir = 'js';
