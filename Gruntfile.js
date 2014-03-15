@@ -25,7 +25,7 @@ module.exports = function(grunt) {
         dest: 'dist/<%= pkg.name %>.js'
       }
     },
-    
+
     connect: {
       server: {
         options: {
@@ -40,6 +40,15 @@ module.exports = function(grunt) {
           hostname: '0.0.0.0',
           base: '.'
         }
+      }
+    },
+
+    copy: {
+      src: {
+        expand: true,
+        flatten: true,
+        src: 'src/*.js',
+        dest: 'dist/'
       }
     },
 
@@ -60,8 +69,13 @@ module.exports = function(grunt) {
           banner: '<%= banner %>',
           report: 'min'
         },
-        src: '<%= concat.dist.dest %>',
-        dest: 'dist/<%= pkg.name %>.min.js'
+        files: [{
+          src: 'dist/knockout-history.js',
+          dest: 'dist/knockout-history.min.js'
+        }, {
+          src: 'dist/knockout-router.js',
+          dest: 'dist/knockout-router.min.js'
+        }]
       }
     },
 
@@ -86,16 +100,16 @@ module.exports = function(grunt) {
         tasks: ['clean', 'dist']
       },
       html: {
-        files: 'index.html'
+        files: ['index.html', 'examples/**/*']
       }
     }
   });
 
   require('load-grunt-tasks')(grunt, {scope: 'devDependencies'});
 
-  //grunt.registerTask('dev-open', ['connect', 'open', 'watch']);
+  grunt.registerTask('dev-open', ['connect', 'open', 'watch']);
   //grunt.registerTask('dev', ['connect', 'watch']);
   //grunt.registerTask('test', []);
-  grunt.registerTask('dist', ['clean', 'concat', 'uglify']);
+  grunt.registerTask('dist', ['clean', 'uglify']);
   grunt.registerTask('default', 'dist');
 };
