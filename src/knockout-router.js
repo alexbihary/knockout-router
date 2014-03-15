@@ -257,12 +257,13 @@
   
   // Configure the router settings.
   exports.configure = function(customSettings) {
-    ko.utils.extend(settings(), customSettings || {});
+    settings(ko.utils.extend(settings(), customSettings || {}));
     return exports;
   }
   
   // Bind the routes and Start the Router/History.
   exports.init = function(options) {
+    settings(ko.utils.extend(settings(), options || {}));
     bindRoutes();
     
     if (settings().debug) {
@@ -274,7 +275,7 @@
       window.vm = window.vm || exports.vm;
     }
     
-    ko.history.start(ko.utils.extend(settings(), options || {}));
+    ko.history.start(settings());
     if (settings().handleRelativeAnchors) handleRelativeAnchors();
     return exports;
   }
