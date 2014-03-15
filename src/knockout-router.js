@@ -125,7 +125,7 @@
     return settings().hashPrefix + route;
   }
   function convertRouteToHref(route) {
-    return settings().root + route;
+    return route;
   }
   function convertRouteToName(route) {
     var value = stripParametersFromRoute(route);
