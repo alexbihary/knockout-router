@@ -25,6 +25,9 @@
         root: '/'
       }),
       routeNotFound = { route: '*notfound', name: 'notfound', callback: noop, nav: false },
+      startsWithRoot = ko.computed(function() {
+        return new RegExp('^' + settings().root.replace(/\//g, '\\/'));
+      }),
       optionalParam = /\((.*?)\)/g,
       namedParam = /(\(\?)?:\w+/g,
       splatParam = /\*\w+/g,
@@ -125,7 +128,7 @@
     return settings().hashPrefix + route;
   }
   function convertRouteToHref(route) {
-    return route;
+    return settings().root + route;
   }
   function convertRouteToName(route) {
     var value = stripParametersFromRoute(route);
@@ -241,6 +244,9 @@
         if (href && href.slice(0, protocol.length) !== protocol && href.indexOf('javascript:') !== 0) {
           // Stop the default event to ensure the link will not cause a page refresh.
           e.preventDefault();
+          
+          // Remove/replace leading root path if present
+          href = startsWithRoot().test(href) ? href.replace(startsWithRoot(), '/') : href;
           
           // Call 'navigate' to allow knockout-router/history to handle the route.
           exports.navigate(href, true);
