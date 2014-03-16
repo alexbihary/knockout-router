@@ -1,5 +1,5 @@
 require.config({
-  baseUrl: 'examples',
+  baseUrl: '/knockout-router/examples',
   paths: {
     'knockout': 'lib/knockout-3.1.0.min',
     'knockout-amd-helpers': 'lib/knockout-amd-helpers-0.6.1',
