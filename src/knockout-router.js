@@ -324,38 +324,46 @@
     ko.history.navigate(fragment, options);
     return exports;
   }
-  
-  
-  
-  
+
   ko.bindingHandlers.router = {
-    init: function(element, valueAccessor, allBindings, bindingContext) {
-      return { controlsDescendantBindings: true };      
+    init: function() {
+      return { controlsDescendantBindings: true };
     },
     update: function(element, valueAccessor, allBindings, bindingContext) {
-      //var settings = ko.utils.unwrapObservable(valueAccessor());
-      var value = valueAccessor(),
-        route, options, moduleBinding, templateBinding;
-      
-      ko.computed(function() {
-        options = ko.utils.unwrapObservable(value);
-        moduleBinding = {}; templateBinding = {};
-        route = exports.vm.activeRoute();
-        if (!route) return; // disable existing module/template bindings?
-        
-        if (route.config.module) {
-          moduleBinding.name = route.config.module;
-          moduleBinding.template = route.config.template || route.config.module;
-          moduleBinding.data = route.args;
-          
-          ko.applyBindingsToNode(element, { module: moduleBinding });
-        } else if (route.config.template) {
-          templateBinding.name = route.config.template;
-          templateBinding.data = route.data;
-          
-          ko.applyBindingsToNode(element, { template: templateBinding });
-        }
-      });
+      var route = exports.vm.activeRoute(),
+        options = ko.utils.unwrapObservable(valueAccessor()), //not currently used
+        binding, virtualChild;
+
+      // clear existing content and bindings
+      ko.virtualElements.emptyNode(element);
+
+      if (!route) return;
+
+      // determine the binding and options to use
+      if (route.config.module) {
+        binding = {
+          module: {
+            name: route.config.module,
+            template: route.config.template || route.config.module,
+            data: route.args
+          }
+        };
+      } else if (route.config.template) {
+        binding = {
+          template: {
+            name: route.config.template,
+            data: route.data
+          }
+        };
+      }
+
+      // apply the bindings to a virtual child, so it can be removed/disposed on subsequent calls
+      if (binding) {
+        virtualChild = document.createElement("ko");
+        element.appendChild(virtualChild);
+
+        ko.applyBindingsToNode(virtualChild, binding, bindingContext);
+      }
     }
   };
   
