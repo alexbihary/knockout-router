@@ -110,6 +110,6 @@ module.exports = function(grunt) {
   grunt.registerTask('dev-open', ['connect', 'open', 'watch']);
   //grunt.registerTask('dev', ['connect', 'watch']);
   //grunt.registerTask('test', []);
-  grunt.registerTask('dist', ['clean', 'uglify']);
+  grunt.registerTask('dist', ['clean', 'copy', 'uglify']);
   grunt.registerTask('default', 'dist');
 };
