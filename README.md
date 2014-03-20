@@ -122,6 +122,7 @@ ko.router.init();
 
 ## ToDo
 
+* Combine knockout-history.js and knockout-router.js into a single file
 * Add ability for router binding to empty its contents when a route does not match
 * Add observable property to notify when nagivating. (for progress bars/spinners)
 * Use the `visible` binding for toggling `route` bounded elements
