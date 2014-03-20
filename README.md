@@ -95,7 +95,8 @@ For complex route patterns, add a `href` property to the route to specific the l
 
 ## Using the `Router` Binding
 ```
--bind="css: { active: isActive }"><a data-bind="text: config.title, av>
+<!-- add router binding to view -->
+<div data-bind="router: {}"></div>
 
 /* configure router */
 ko.router.configure(options);
