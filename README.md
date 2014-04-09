@@ -10,7 +10,7 @@ a router for knockout spa applications (a port of Backbone.Router with influence
 2. Optionally include `knockout-amd-helpers.js` (https://github.com/rniemeyer/knockout-amd-helpers) to take advantage of external module/template loading.
 3. Include `knockout-history.js` and `knockout-router.js` from this repo (supports commonjs, amd, or global).
 4. Add `route` and/or `router` bindings to HTML markup.
-5. Optionally call `ko.router.configure(options)` and pass in custom an options hash object.
+5. Optionally call `ko.router.configure(options)` and pass in a custom options hash object.
 6. Call `ko.router.map(routeConfig)` and pass in an array of routes.
 7. Call `ko.applyBindings(vm)`, add `router` property to your view model and set it to `ko.router.vm` if using the router to render your navigation links.
 8. Call `ko.router.init()`, which starts the router and history tracking.
